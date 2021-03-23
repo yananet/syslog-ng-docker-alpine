@@ -1,0 +1,31 @@
+version: "3"
+
+services:
+  syslog-ng:
+    build:
+      context: ./syslog-ng/.
+      dockerfile: Dockerfile
+    image: mysyslog
+    volumes:
+      - ./syslog-ng/syslog-ng.conf:/etc/syslog-ng/syslog-ng.conf
+      - ./log:/app
+    ports:
+      - 514:514/udp
+    environment:
+      - TZ=Asia/Tokyo
+      - PUID=1000
+      - PGID=1000
+      - SYSLOG_FILENAME=mylog.log
+    restart: always
+    cap_add:
+      - NET_ADMIN
+    command:
+      - exec
+      - s6-setuidgid
+      - abc
+      - syslog-ng
+      - --pidfile=/tmp/non-root-syslog-ng.pid
+      - --persist-file=/tmp/non-root-syslog-ng.persist
+      - --control=/tmp/non-root-syslog-ng.ctl
+      - -F
+      - -edv # to enable debug log to docker console
